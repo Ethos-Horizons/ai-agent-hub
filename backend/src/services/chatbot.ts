@@ -164,7 +164,17 @@ export class ChatbotService {
       const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
       const context = this.buildContext(conversation)
-      const prompt = this.buildPrompt(message, context)
+      
+      // Check if this is a scheduling-related query
+      const isSchedulingQuery = this.isSchedulingQuery(message)
+      let availableSlots = null
+      
+      if (isSchedulingQuery) {
+        // Get available slots from appointment scheduler
+        availableSlots = await this.getAvailableAppointmentSlots()
+      }
+      
+      const prompt = this.buildPrompt(message, context, availableSlots || undefined)
 
       const result = await model.generateContent(prompt)
       const response = await result.response
@@ -172,6 +182,27 @@ export class ChatbotService {
 
       // Parse AI response
       const parsedResponse = this.parseAIResponse(text)
+      
+      // Enhanced scheduling intent detection
+      const schedulingIntent = this.detectSchedulingIntent(message, parsedResponse)
+      if (schedulingIntent) {
+        parsedResponse.intent = schedulingIntent.intent
+        parsedResponse.confidence = schedulingIntent.confidence
+        parsedResponse.suggestions = [
+          'What day works best for you?',
+          'What time of day do you prefer?',
+          'Do you have any specific requirements for the consultation?'
+        ]
+        
+        // Log scheduling intent for background agent
+        logger.info('Scheduling intent detected', {
+          conversationId: conversation.id,
+          visitorId: conversation.visitorId,
+          intent: schedulingIntent.intent,
+          confidence: schedulingIntent.confidence,
+          message: message
+        })
+      }
       
       return {
         message: parsedResponse.message,
@@ -201,8 +232,8 @@ export class ChatbotService {
     ).join('\n')
   }
 
-  private buildPrompt(message: string, context: string): string {
-    return `You are an AI assistant for Ethos Digital, a digital marketing agency. Your role is to help website visitors learn about our services and qualify potential leads.
+  private buildPrompt(message: string, context: string, availableSlots?: string[]): string {
+    let prompt = `You are an AI assistant for Ethos Digital, a digital marketing agency. Your role is to help website visitors learn about our services and qualify potential leads.
 
 ETHOS DIGITAL INFORMATION:
 - Services: SEO, PPC Advertising, Web Development, Content Marketing, Social Media Marketing, Analytics & Reporting
@@ -218,9 +249,12 @@ VISITOR MESSAGE: ${message}
 INSTRUCTIONS:
 1. Respond in a friendly, professional tone that matches Ethos Digital's brand
 2. Provide helpful information about our services when asked
-3. Ask qualifying questions to understand visitor needs
-4. Suggest next steps like scheduling a consultation
-5. Keep responses concise but informative
+3. Ask 1-2 gentle qualifying questions maximum - don't be pushy
+4. If visitor wants to schedule, accommodate them immediately - don't insist on more details
+5. Keep responses concise and helpful
+6. Be accommodating and flexible - prioritize the visitor's comfort over gathering information
+7. If visitor seems frustrated or wants to move to scheduling, respect that immediately
+8. When discussing available times, use ONLY the provided available slots - do not make up times
 
 RESPONSE FORMAT (JSON):
 {
@@ -232,6 +266,12 @@ RESPONSE FORMAT (JSON):
 }
 
 Respond with only the JSON object:`
+
+    if (availableSlots && availableSlots.length > 0) {
+      prompt += `\n\nAVAILABLE APPOINTMENT SLOTS (use these exact times only): ${availableSlots.join(', ')}`
+    }
+
+    return prompt
   }
 
   private parseAIResponse(response: string): any {
@@ -274,6 +314,102 @@ We specialize in:
 • Analytics & Performance Tracking
 
 What brings you to our website today? Are you looking for help with any specific aspect of your digital marketing?`
+  }
+
+  private detectSchedulingIntent(message: string, response: ChatbotResponse): { intent: string; confidence: number } | null {
+    const lowerMessage = message.toLowerCase()
+    const lowerResponse = response.message.toLowerCase()
+    
+    // Scheduling keywords
+    const schedulingKeywords = [
+      'appointment', 'schedule', 'meeting', 'consultation', 'call', 'meet',
+      'book', 'reserve', 'set up', 'arrange', 'coordinate', 'plan'
+    ]
+    
+    // Time/date keywords
+    const timeKeywords = [
+      'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+      'morning', 'afternoon', 'evening', 'am', 'pm', 'o\'clock', 'hour',
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ]
+    
+    // Frustration/urgency indicators
+    const urgencyKeywords = [
+      'rather', 'just', 'simply', 'directly', 'instead', 'prefer',
+      'don\'t know', 'not sure', 'confused', 'complicated'
+    ]
+    
+    // Check for scheduling intent
+    const hasSchedulingKeyword = schedulingKeywords.some(keyword => 
+      lowerMessage.includes(keyword) || lowerResponse.includes(keyword)
+    )
+    
+    const hasTimeKeyword = timeKeywords.some(keyword => 
+      lowerMessage.includes(keyword) || lowerResponse.includes(keyword)
+    )
+    
+    const hasUrgencyKeyword = urgencyKeywords.some(keyword => 
+      lowerMessage.includes(keyword)
+    )
+    
+    // Check for specific scheduling patterns
+    const schedulingPatterns = [
+      /(?:when|what time|what day).*(?:available|work|good|convenient)/i,
+      /(?:schedule|book|set up).*(?:appointment|meeting|consultation)/i,
+      /(?:available|free).*(?:monday|tuesday|wednesday|thursday|friday)/i,
+      /(?:prefer|like).*(?:morning|afternoon|evening)/i,
+      /(?:rather|just|simply).*(?:schedule|meet|call|consult)/i
+    ]
+    
+    const hasSchedulingPattern = schedulingPatterns.some(pattern => 
+      pattern.test(message) || pattern.test(response.message)
+    )
+    
+    if (hasSchedulingKeyword || hasTimeKeyword || hasSchedulingPattern || hasUrgencyKeyword) {
+      let confidence = 0.6 // Base confidence
+      
+      if (hasSchedulingKeyword) confidence += 0.2
+      if (hasTimeKeyword) confidence += 0.1
+      if (hasSchedulingPattern) confidence += 0.1
+      if (hasUrgencyKeyword) confidence += 0.2 // Boost confidence for urgency
+      
+      // Boost confidence if multiple indicators present
+      if (hasSchedulingKeyword && hasTimeKeyword) confidence += 0.1
+      if (hasSchedulingPattern) confidence += 0.1
+      if (hasUrgencyKeyword && (hasSchedulingKeyword || hasSchedulingPattern)) confidence += 0.1
+      
+      confidence = Math.min(confidence, 0.95) // Cap at 95%
+      
+      return {
+        intent: 'appointment_scheduling',
+        confidence
+      }
+    }
+    
+    return null
+  }
+
+  private isSchedulingQuery(message: string): boolean {
+    const schedulingKeywords = [
+      'available', 'time', 'slot', 'when', 'schedule', 'appointment',
+      'what time', 'what day', 'availability', 'open'
+    ]
+    
+    return schedulingKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    )
+  }
+
+  private async getAvailableAppointmentSlots(): Promise<string[]> {
+    // This would integrate with a real calendar system
+    // For now, return simulated data that matches the frontend
+    return [
+      'Wednesday, August 7th at 10:00 AM',
+      'Wednesday, August 7th at 2:00 PM', 
+      'Thursday, August 8th at 11:00 AM',
+      'Friday, August 9th at 3:00 PM'
+    ]
   }
 
   async getConversation(id: string): Promise<Conversation | null> {

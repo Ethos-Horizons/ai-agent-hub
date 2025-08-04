@@ -1,43 +1,30 @@
 import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { logger } from '../utils/logger'
+import { getSupabase } from '../database/connection'
 
 const router = Router()
 
 // Get all agents
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // Mock data - replace with actual database queries
-    const agents = [
-      {
-        id: '1',
-        name: 'Website Chatbot',
-        type: 'Customer Service',
-        description: 'AI chatbot for website visitor assistance',
-        status: 'active',
-        version: '1.0.0',
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
-        taskCount: 156,
-        successRate: 94.2
-      },
-      {
-        id: '2',
-        name: 'Content Writer',
-        type: 'Content Creation',
-        description: 'AI agent for generating blog posts and content',
-        status: 'active',
-        version: '1.0.0',
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
-        taskCount: 23,
-        successRate: 87.5
-      }
-    ]
+    const supabase = getSupabase()
+    const { data: agents, error } = await supabase
+      .from('agents')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      logger.error('Database error fetching agents:', error)
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch agents from database'
+      })
+    }
 
     return res.json({
       success: true,
-      agents
+      agents: agents || []
     })
   } catch (error) {
     logger.error('Error fetching agents:', error)
@@ -105,16 +92,27 @@ router.post('/', [
 
     const { name, type, description, config } = req.body
 
-    // Mock agent creation - replace with actual database insert
-    const agent = {
-      id: Date.now().toString(),
-      name,
-      type,
-      description,
-      status: 'inactive',
-      version: '1.0.0',
-      createdAt: new Date().toISOString(),
-      config: config || {}
+    const supabase = getSupabase()
+    const { data: agent, error } = await supabase
+      .from('agents')
+      .insert({
+        name,
+        type,
+        description,
+        status: 'inactive',
+        version: '1.0.0',
+        config: config || {},
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('Database error creating agent:', error)
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to create agent in database'
+      })
     }
 
     logger.info(`Created new agent: ${name}`)
@@ -138,11 +136,23 @@ router.put('/:id', async (req: Request, res: Response) => {
     const { id } = req.params
     const updates = req.body
 
-    // Mock agent update - replace with actual database update
-    const agent = {
-      id,
-      ...updates,
-      updatedAt: new Date().toISOString()
+    const supabase = getSupabase()
+    const { data: agent, error } = await supabase
+      .from('agents')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      logger.error('Database error updating agent:', error)
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update agent in database'
+      })
     }
 
     logger.info(`Updated agent: ${id}`)
@@ -165,7 +175,20 @@ router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    // Mock agent deletion - replace with actual database delete
+    const supabase = getSupabase()
+    const { error } = await supabase
+      .from('agents')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      logger.error('Database error deleting agent:', error)
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to delete agent from database'
+      })
+    }
+
     logger.info(`Deleted agent: ${id}`)
 
     return res.json({
