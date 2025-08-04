@@ -19,7 +19,7 @@ interface LayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Agents', href: '/agents', icon: Bot },
-  { name: 'Chatbot', href: '/chatbot', icon: MessageSquare },
+          { name: 'Agent Playground', href: '/chatbot', icon: MessageSquare },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
