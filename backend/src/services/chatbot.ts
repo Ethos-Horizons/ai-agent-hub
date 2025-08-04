@@ -2,6 +2,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { v4 as uuidv4 } from 'uuid'
 import { logger } from '../utils/logger'
 
+//import dotenv
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+
 interface Conversation {
   id: string
   visitorId: string

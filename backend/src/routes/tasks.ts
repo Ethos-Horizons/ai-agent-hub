@@ -49,7 +49,7 @@ router.get('/', async (req: Request, res: Response) => {
       }
     ]
 
-    res.json({
+    return res.json({
       success: true,
       tasks,
       pagination: {
@@ -61,7 +61,7 @@ router.get('/', async (req: Request, res: Response) => {
     })
   } catch (error) {
     logger.error('Error fetching tasks:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch tasks'
     })
@@ -107,13 +107,13 @@ router.get('/:id', async (req: Request, res: Response) => {
       cost: 0.02
     }
 
-    res.json({
+    return res.json({
       success: true,
       task
     })
   } catch (error) {
     logger.error('Error fetching task:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch task'
     })
@@ -125,7 +125,7 @@ router.post('/', [
   body('agentId').isString().withMessage('Agent ID is required'),
   body('type').isString().withMessage('Task type is required'),
   body('parameters').isObject().withMessage('Task parameters are required')
-], async (req, res) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -150,13 +150,13 @@ router.post('/', [
 
     logger.info(`Created new task: ${task.id} for agent: ${agentId}`)
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       task
     })
   } catch (error) {
     logger.error('Error creating task:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to create task'
     })
@@ -185,13 +185,13 @@ router.post('/:id/execute', async (req: Request, res: Response) => {
       completedAt: new Date().toISOString()
     }
 
-    res.json({
+    return res.json({
       success: true,
       result
     })
   } catch (error) {
     logger.error('Error executing task:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to execute task'
     })
@@ -220,13 +220,13 @@ router.get('/:id/result', async (req: Request, res: Response) => {
       completedAt: new Date().toISOString()
     }
 
-    res.json({
+    return res.json({
       success: true,
       result
     })
   } catch (error) {
     logger.error('Error fetching task result:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch task result'
     })
@@ -241,13 +241,13 @@ router.post('/:id/cancel', async (req: Request, res: Response) => {
     // Mock task cancellation - replace with actual cancellation logic
     logger.info(`Cancelled task: ${id}`)
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Task cancelled successfully'
     })
   } catch (error) {
     logger.error('Error cancelling task:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to cancel task'
     })
@@ -267,13 +267,13 @@ router.get('/queue/status', async (req: Request, res: Response) => {
       estimatedCompletionTime: new Date(Date.now() + 300000).toISOString() // 5 minutes from now
     }
 
-    res.json({
+    return res.json({
       success: true,
       queueStatus
     })
   } catch (error) {
     logger.error('Error fetching queue status:', error)
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch queue status'
     })
