@@ -182,7 +182,7 @@ docker-compose.override.yml
 .local/
 local/
 
-# AI Agent Dashboard specific
+# AI Hub specific
 # Training data and model files
 models/
 training-data/

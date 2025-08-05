@@ -59,17 +59,17 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* AI Agent Dashboard */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Bot className="w-6 h-6 text-primary-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">AI Agent Dashboard</h4>
-                <p className="text-sm text-gray-500">Agent creation & management</p>
-              </div>
-            </div>
+                     {/* AI Hub */}
+           <div className="space-y-4">
+             <div className="flex items-center space-x-3">
+               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                 <Bot className="w-6 h-6 text-primary-600" />
+               </div>
+               <div>
+                 <h4 className="font-semibold text-gray-900">AI Hub</h4>
+                 <p className="text-sm text-gray-500">Agent creation & management</p>
+               </div>
+             </div>
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <Cpu className="w-4 h-4 text-orange-500" />
@@ -430,7 +430,7 @@ export default function Settings() {
               <CheckCircle className="w-5 h-5 text-green-500" />
               <h4 className="font-semibold text-gray-900">Phase 1: Foundation & Chatbot</h4>
             </div>
-            <p className="text-sm text-gray-600 mb-2">✅ AI Agent Dashboard with chatbot integration</p>
+                         <p className="text-sm text-gray-600 mb-2">✅ AI Hub with chatbot integration</p>
             <p className="text-sm text-gray-600 mb-2">✅ Appointment scheduling detection</p>
             <p className="text-sm text-gray-600">✅ Multi-agent testing environment</p>
           </div>
@@ -767,7 +767,7 @@ export default function Settings() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Configure your AI Agent Dashboard settings
+          Configure your AI Hub settings
         </p>
       </div>
 

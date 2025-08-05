@@ -10,7 +10,7 @@
 
 1. In Google AI Studio, click on **"Get API key"** in the top right
 2. Click **"Create API key"**
-3. Give it a name like "AI Agent Dashboard"
+3. Give it a name like "AI Hub"
 4. Copy the API key (it starts with `AIza...`)
 5. **Important**: Keep this secret and never commit it to version control
 

@@ -37,7 +37,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex h-16 items-center justify-between px-4">
             <div className="flex items-center">
               <Zap className="h-8 w-8 text-primary-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">AI Dashboard</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">AI Hub</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -74,7 +74,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
           <div className="flex h-16 items-center px-4">
             <Zap className="h-8 w-8 text-primary-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">AI Dashboard</span>
+            <span className="ml-2 text-xl font-bold text-gray-900">AI Hub</span>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {

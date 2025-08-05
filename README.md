@@ -1,4 +1,4 @@
-# AI Agent Dashboard - Ethos Digital
+# AI Hub - Ethos Digital
 
 A comprehensive AI agent management system that serves as the "brain" of automated services for Ethos Digital. This platform manages, deploys, and monitors AI agents that can be called upon to perform various business tasks, from content creation to analytics analysis.
 

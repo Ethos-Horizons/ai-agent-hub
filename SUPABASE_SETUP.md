@@ -1,4 +1,4 @@
-# Supabase Setup Guide for AI Agent Dashboard
+# Supabase Setup Guide for AI Hub
 
 ## Step 1: Create Supabase Project
 

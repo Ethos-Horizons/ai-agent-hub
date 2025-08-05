@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-dashboard-backend",
   "version": "1.0.0",
-  "description": "Backend API for AI Agent Dashboard",
+  "description": "Backend API for AI Hub",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",

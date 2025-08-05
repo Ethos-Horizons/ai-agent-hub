@@ -1,4 +1,4 @@
-# AI Agent Dashboard Application - Development Prompt
+# AI Hub Application - Development Prompt
 
 ## 🤖 **Project Overview**
 Create a comprehensive AI agent management system that serves as the "brain" of our automated services. This platform will manage, deploy, and monitor AI agents that can be called upon by the Admin/Client Portal to perform various business tasks, from content creation to analytics analysis.
